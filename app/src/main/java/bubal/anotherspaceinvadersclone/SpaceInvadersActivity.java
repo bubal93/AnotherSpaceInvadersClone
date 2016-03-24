@@ -16,6 +16,7 @@ public class SpaceInvadersActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Display display = getWindowManager().getDefaultDisplay();
+        // Load the resolution into a Point object
         Point size = new Point();
         display.getSize(size);
 

@@ -15,7 +15,7 @@ public class Bullet {
     int heading = -1;
     float speed = 350;
 
-    private int width = 1;
+    private int width = 2;
     private int height;
 
     private boolean isActive;
@@ -41,6 +41,7 @@ public class Bullet {
     }
 
     public float getImpactPointY() {
+
         if (heading == DOWN) {
             return y + height;
         } else {
@@ -49,6 +50,7 @@ public class Bullet {
     }
 
     public boolean shoot(float startX, float startY, int direction) {
+
         if (!isActive) {
             x = startX;
             y = startY;
@@ -56,7 +58,7 @@ public class Bullet {
             isActive = true;
             return true;
         }
-
+        // Bullet already active
         return false;
     }
 
@@ -72,6 +74,5 @@ public class Bullet {
         rect.right = x + width;
         rect.top = y;
         rect.bottom = y + height;
-
     }
 }

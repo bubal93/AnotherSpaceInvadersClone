@@ -20,7 +20,6 @@ public class Invader {
     private float height;
 
     private float x;
-
     private float y;
 
     private float shipSpeed;
@@ -49,15 +48,9 @@ public class Invader {
         bitmap1 = BitmapFactory.decodeResource(context.getResources(), R.drawable.invader1);
         bitmap2 = BitmapFactory.decodeResource(context.getResources(), R.drawable.invader2);
 
-        bitmap1 = Bitmap.createScaledBitmap(bitmap1,
-                (int) (length),
-                (int) (height),
-                false);
-
-        bitmap2 = Bitmap.createScaledBitmap(bitmap2,
-                (int) (length),
-                (int) (height),
-                false);
+        //Stretch the bitmaps to a size appropriate for the screen resolution
+        bitmap1 = Bitmap.createScaledBitmap(bitmap1, (int) (length), (int) (height), false);
+        bitmap2 = Bitmap.createScaledBitmap(bitmap2, (int) (length), (int) (height), false);
 
         shipSpeed = 40;
     }
@@ -95,6 +88,7 @@ public class Invader {
     }
 
     public void update(long fps) {
+
         if (shipMoving == LEFT) {
             x = x - shipSpeed / fps;
         }
@@ -107,7 +101,6 @@ public class Invader {
         rect.bottom = y + height;
         rect.left = x;
         rect.right = x + length;
-
     }
 
     public void dropDownAndReverse() {
@@ -126,6 +119,7 @@ public class Invader {
 
         int randomNumber = -1;
 
+        // If near the player, 1 in 500 chance to shoot
         if ((playerShipX + playerShipLength > x && playerShipX + playerShipLength < x + length) ||
                 (playerShipX > x && playerShipX < x + length)) {
 
@@ -135,6 +129,7 @@ public class Invader {
             }
         }
 
+        // If not near the player, 1 in 5000 chance to shoot
         randomNumber = generator.nextInt(2000);
         if (randomNumber == 0) {
             return true;

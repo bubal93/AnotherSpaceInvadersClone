@@ -18,12 +18,13 @@ import java.io.IOException;
 
 public class SpaceInvadersView extends SurfaceView implements Runnable {
 
-    Context context;
+    private Context context;
 
     private Thread gameThread = null;
 
     private SurfaceHolder ourHolder;
 
+    // A boolean if the game is running- or not.
     private volatile boolean playing;
 
     private boolean paused = true;
@@ -32,26 +33,25 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     private Paint paint;
 
     private long fps;
-
     private long timeThisFrame;
 
     private int screenX;
     private int screenY;
 
     private PlayerShip playerShip;
-
     private Bullet bullet;
 
     private Bullet[] invadersBullets = new Bullet[200];
     private int nextBullet;
     private int maxInvaderBullets = 10;
 
-    Invader[] invaders = new Invader[60];
-    int numInvaders = 0;
+    private Invader[] invaders = new Invader[60];
+    private int numInvaders = 0;
 
     private DefenceBrick[] bricks = new DefenceBrick[400];
     private int numBricks;
 
+    // For sound FX
     private SoundPool soundPool;
     private int playerExplodeID = -1;
     private int invaderExplodeID = -1;
@@ -60,13 +60,16 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     private int uhID = -1;
     private int ohID = -1;
 
-    int score = 0;
+    private int score = 0;
+    private int lives = 5;
 
-    private int lives = 3;
-
+    // How menacing should the sound be?
     private long menaceInterval = 1000;
+    // Which menace sound should play next
     private boolean uhOrOh;
+    // When did we last play a menacing sound
     private long lastMenaceTime = System.currentTimeMillis();
+
 
     public SpaceInvadersView(Context context, int x, int y) {
 
@@ -111,17 +114,12 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             Log.e("error", "failed to load sound files");
         }
 
-
         prepareLevel();
     }
 
     private void prepareLevel() {
 
-
-        menaceInterval = 1000;
-
         playerShip = new PlayerShip(context, screenX, screenY);
-
         bullet = new Bullet(screenY);
 
         for (int i = 0; i < invadersBullets.length; i++) {
@@ -145,7 +143,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 }
             }
         }
-
+        menaceInterval = 1000;
     }
 
     @Override
@@ -165,18 +163,21 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 fps = 1000 / timeThisFrame;
             }
 
+            // Play a sound based on the menace level
             if (!paused) {
                 if ((startFrameTime - lastMenaceTime) > menaceInterval) {
                     if (uhOrOh) {
+                        // Play Uh
                         soundPool.play(uhID, 1, 1, 0, 0, 1);
 
                     } else {
+                        // Play Oh
                         soundPool.play(ohID, 1, 1, 0, 0, 1);
                     }
 
-
+                    // Reset the last menace time
                     lastMenaceTime = System.currentTimeMillis();
-
+                    // Alter value of uhOrOh
                     uhOrOh = !uhOrOh;
                 }
             }
@@ -187,36 +188,38 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
 
         boolean bumped = false;
 
-
         boolean lost = false;
-
 
         playerShip.update(fps);
 
 
+        if (bullet.getStatus()) {
+            bullet.update(fps);
+        }
+
+        for (int i = 0; i < invadersBullets.length; i++) {
+            if (invadersBullets[i].getStatus()) {
+                invadersBullets[i].update(fps);
+            }
+        }
+
         for (int i = 0; i < numInvaders; i++) {
             if (invaders[i].getVisibility()) {
 
-
                 invaders[i].update(fps);
 
-
                 if (invaders[i].takeAim(playerShip.getX(), playerShip.getLength())) {
-
-
-                    if (invadersBullets[nextBullet].shoot(invaders[i].getX() + invaders[i].getLength() / 2, invaders[i].getY(), bullet.DOWN)) {
-
+                    if (invadersBullets[nextBullet].
+                            shoot(invaders[i].getX() + invaders[i].getLength() / 2,
+                                    invaders[i].getY(), bullet.DOWN)) {
 
                         nextBullet++;
 
-
                         if (nextBullet == maxInvaderBullets) {
-
                             nextBullet = 0;
                         }
                     }
                 }
-
 
                 if (invaders[i].getX() > screenX - invaders[i].getLength()
                         || invaders[i].getX() < 0) {
@@ -226,25 +229,14 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             }
         }
 
-        for (int i = 0; i < invadersBullets.length; i++) {
-            if (invadersBullets[i].getStatus()) {
-                invadersBullets[i].update(fps);
-            }
-        }
-
-
         if (bumped) {
-
             for (int i = 0; i < numInvaders; i++) {
-
                 invaders[i].dropDownAndReverse();
-
 
                 if (invaders[i].getY() > screenY - screenY / 10) {
                     lost = true;
                 }
             }
-
 
             menaceInterval = menaceInterval - 80;
         }
@@ -253,24 +245,18 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             prepareLevel();
         }
 
-
-        if (bullet.getStatus()) {
-            bullet.update(fps);
-        }
-
-
         if (bullet.getImpactPointY() < 0) {
             bullet.setInactive();
         }
 
-
         for (int i = 0; i < invadersBullets.length; i++) {
+
             if (invadersBullets[i].getImpactPointY() > screenY) {
                 invadersBullets[i].setInactive();
             }
         }
 
-
+        // Has the player's bullet hit an invader
         if (bullet.getStatus()) {
             for (int i = 0; i < numInvaders; i++) {
                 if (invaders[i].getVisibility()) {
@@ -279,7 +265,6 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                         soundPool.play(invaderExplodeID, 1, 1, 0, 0, 1);
                         bullet.setInactive();
                         score = score + 10;
-
 
                         if (score == numInvaders * 10) {
                             paused = true;
@@ -292,7 +277,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             }
         }
 
-
+        // Has an alien bullet hit a shelter brick
         for (int i = 0; i < invadersBullets.length; i++) {
             if (invadersBullets[i].getStatus()) {
                 for (int j = 0; j < numBricks; j++) {
@@ -306,10 +291,9 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                     }
                 }
             }
-
         }
 
-
+        // Has a player bullet hit a shelter brick
         if (bullet.getStatus()) {
             for (int i = 0; i < numBricks; i++) {
                 if (bricks[i].getVisibility()) {
@@ -323,7 +307,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             }
         }
 
-
+        // Has an invader bullet hit the player ship
         for (int i = 0; i < invadersBullets.length; i++) {
             if (invadersBullets[i].getStatus()) {
                 if (RectF.intersects(playerShip.getRect(), invadersBullets[i].getRect())) {
@@ -331,24 +315,21 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                     lives--;
                     soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
 
-
                     if (lives == 0) {
                         paused = true;
                         lives = 3;
                         score = 0;
                         prepareLevel();
-
                     }
                 }
             }
         }
-
     }
 
     private void draw() {
 
         if (ourHolder.getSurface().isValid()) {
-            // Lock the canvas ready to draw
+
             canvas = ourHolder.lockCanvas();
 
             canvas.drawColor(Color.argb(255, 26, 128, 182));
@@ -377,23 +358,20 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 canvas.drawRect(bullet.getRect(), paint);
             }
 
-
             for (int i = 0; i < invadersBullets.length; i++) {
                 if (invadersBullets[i].getStatus()) {
                     canvas.drawRect(invadersBullets[i].getRect(), paint);
                 }
             }
 
-
+            //HUD
             paint.setColor(Color.argb(255, 249, 129, 0));
             paint.setTextSize(40);
             canvas.drawText("Score: " + score + "   Lives: " + lives, 10, 50, paint);
 
-
             ourHolder.unlockCanvasAndPost(canvas);
         }
     }
-
 
     public void pause() {
         playing = false;
@@ -402,9 +380,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         } catch (InterruptedException e) {
             Log.e("Error:", "joining thread");
         }
-
     }
-
 
     public void resume() {
         playing = true;
@@ -412,15 +388,12 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         gameThread.start();
     }
 
-
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
 
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
 
-
             case MotionEvent.ACTION_DOWN:
-
                 paused = false;
 
                 if (motionEvent.getY() > screenY - screenY / 8) {
@@ -430,9 +403,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                         playerShip.setMovementState(playerShip.LEFT);
                     }
                 }
-
                 if (motionEvent.getY() < screenY - screenY / 8) {
-
                     if (bullet.shoot(playerShip.getX() + playerShip.getLength() / 2, screenY, bullet.UP)) {
                         soundPool.play(shootID, 1, 1, 0, 0, 1);
                     }
@@ -440,7 +411,6 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 break;
 
             case MotionEvent.ACTION_UP:
-
                 if (motionEvent.getY() > screenY - screenY / 10) {
                     playerShip.setMovementState(playerShip.STOPPED);
                 }

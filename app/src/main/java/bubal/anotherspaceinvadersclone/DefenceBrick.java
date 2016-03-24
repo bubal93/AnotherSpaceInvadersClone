@@ -15,7 +15,6 @@ public class DefenceBrick {
 
         isVisible = true;
 
-
         int brickPadding = 1;
         int shelterPadding = screenX / 9;
         int startHeight = screenY - (screenY / 8 * 2);
@@ -26,15 +25,15 @@ public class DefenceBrick {
                 row * height + height - brickPadding + startHeight);
     }
 
-    public RectF getRect(){
+    public RectF getRect() {
         return this.rect;
     }
 
-    public void setInvisible(){
+    public void setInvisible() {
         isVisible = false;
     }
 
-    public boolean getVisibility(){
+    public boolean getVisibility() {
         return isVisible;
     }
 }

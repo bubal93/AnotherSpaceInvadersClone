@@ -38,43 +38,40 @@ public class PlayerShip {
         y = screenY - 20;
 
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.playership);
-
-        bitmap = Bitmap.createScaledBitmap(bitmap,
-                (int) (length),
-                (int) (height),
-                false);
+        //Stretch the bitmap to a size appropriate for the screen resolution
+        bitmap = Bitmap.createScaledBitmap(bitmap, (int) (length), (int) (height), false);
 
         shipSpeed = 350;
     }
 
-    public RectF getRect(){
+    public RectF getRect() {
         return rect;
     }
 
-
-    public Bitmap getBitmap(){
+    public Bitmap getBitmap() {
         return bitmap;
     }
 
-    public float getX(){
+    public float getX() {
         return x;
     }
 
-    public float getLength(){
+    public float getLength() {
         return length;
     }
 
-    public void setMovementState(int state){
+    public void setMovementState(int state) {
         shipMoving = state;
     }
 
 
-    public void update(long fps){
-        if(shipMoving == LEFT){
+    public void update(long fps) {
+
+        if (shipMoving == LEFT) {
             x = x - shipSpeed / fps;
         }
 
-        if(shipMoving == RIGHT){
+        if (shipMoving == RIGHT) {
             x = x + shipSpeed / fps;
         }
 
@@ -82,6 +79,5 @@ public class PlayerShip {
         rect.bottom = y + height;
         rect.left = x;
         rect.right = x + length;
-
     }
 }
